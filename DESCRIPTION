@@ -1,0 +1,31 @@
+Package: rCLIFII
+Type: Package
+Title: Composite Likelihood Inference for Individual Identifications 
+Version: 0.1.0
+Description: Functions for analysis of individual identification data in a composite likelihood inference framework. In particular, for the models of lagged identification rate and lagged association rate, which are commonly used to study animal movement and social structure. 
+Encoding: UTF-8
+LazyData: TRUE
+License: MIT + file LICENSE
+URL: https://github.com/Xuxl2020/rCLIFII/
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    stats,
+    dplyr,
+    ggplot2,
+    magrittr
+Suggests:
+    spelling, 
+    foreach,
+    parallel,
+    doParallel,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    knitr
+Config/testthat/edition: 3
+Author: Xueli Xu, Zhihao Lyu, Ximing Xu
+Maintainer: Xueli Xu <xu_xueli@gibh.ac.cn>
+VignetteBuilder: knitr
+Language: en-US
+Depends: 
+    R (>= 2.10)
