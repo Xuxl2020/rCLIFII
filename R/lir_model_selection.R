@@ -69,7 +69,7 @@ lir_model_selection <- function(X, n, tp, model, nboot, mtau = 1000, ncores = 4,
     cl <- parallel::makeCluster(ncores) # not to overload your computer
     doParallel::registerDoParallel(cl)
     RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
-      sampboot <- lir_bootstrap(X, tp, seed = NULL)
+      sampboot <- lir_bootstrap(X, tp, seed)
       dat <- lir_nonparametric_estimation(sampboot, n, tp)
       mij <- dat$mij
       nij <- dat$nij
