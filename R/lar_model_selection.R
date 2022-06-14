@@ -45,7 +45,8 @@ lar_model_selection <- function(X, model, block_list, nboot, group_id = NULL, mt
   }
   if(model == 'lar_2'){
     mod0 <- 'Model5'
-  }else{
+  }
+  if(model == 'lar_3'){
     mod0 <- 'Model6'
   }
   model.H <- lar.model.res(mod0, Aij, Ai, tauij, mtau)$H

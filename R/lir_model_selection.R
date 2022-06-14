@@ -56,7 +56,8 @@ lir_model_selection <- function(X, n, tp, model, nboot, mtau = 1000, ncores = 4,
   }
   if(model == 'lir_2'){
     mod0 <- 'Model2'
-  }else{
+  }
+  if(model == 'lir_3'){
     mod0 <- 'Model3'
   }
 

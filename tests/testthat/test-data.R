@@ -1,6 +1,5 @@
 
 test_that("Results of model selection for LIR", {
-
   Z <- 300; N <- 100; n <- 40
   # set the observation time
   tp <- c(1:5, 51:55, 101:105, 501:505, 601:605)
@@ -14,7 +13,6 @@ test_that("Results of model selection for LIR", {
   lir_model_selection(X=simulation_C, n=40, tp, model='lir_1', nboot=nboot, mtau = 1000, ncores = ncores)
   lir_model_selection(X=simulation_C, n=40, tp, model='lir_2', nboot=nboot, mtau = 1000, ncores = ncores)
   lir_model_selection(X=simulation_C, n=40, tp, model='lir_3', nboot=nboot, mtau = 1000, ncores = ncores)
-
   # set population size and number of subsampling
   N <- 100; n <- 4; W <- 10; U <- 20
   # set the observation time

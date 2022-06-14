@@ -60,6 +60,7 @@
 #'   theme(axis.text = element_text(size = rel(1.2))) +
 #'   labs(x = 'Time Lag', y = 'Lagged Identification Rates', title = 'Simulation_A') +
 #'   geom_hline(yintercept = theta, linetype = 2, color = 'blue')
+#'   geom_hline(yintercept = 0.01, linetype = 3, color = 'red')
 #'
 #' # simulation of Type B
 #' simulation_B <- lir_simulation_B(N, n, lambda_B, tp)
@@ -110,18 +111,19 @@ lir_simulation_A <- function(N, n, tp) {
   }
 
   if (length(n) == 1) {
-    n <- rep(n, length(tp))
+    n0 <- rep(n, length(tp))
   }
 
   list_data <- list()
   for(i in tp){
-    list_data[[i]] <- sample(1:N, n[which(tp==i)], replace = FALSE)
+    list_data[[i]] <- sample(1:N, n, replace = F)
   }
 
   matrix_data <- list_to_matrix(list_data, tp)
   simulation_A <- matrix_data
   return(simulation_A)
 }
+
 
 #' @rdname lir_simulations
 #' @export
