@@ -115,7 +115,7 @@ lir_simulation_A <- function(N, n, tp) {
 
   list_data <- list()
   for(i in tp){
-    list_data[[i]] <- sample(1:N, n[which(tp==i)], replace = TRUE)
+    list_data[[i]] <- sample(1:N, n[which(tp==i)], replace = FALSE)
   }
 
   matrix_data <- list_to_matrix(list_data, tp)
