@@ -75,6 +75,7 @@ geom_point() +
   theme(axis.text = element_text(size = rel(1.2))) +
   labs(x = 'Time Lag', y = 'Lagged Identification Rates', title = 'Simulation_A') +
   geom_hline(yintercept = theta, linetype = 2, color = 'blue')
+  geom_hline(yintercept = 0.01, linetype = 3, color = 'red')
 
 # simulation of Type B
 simulation_B <- lir_simulation_B(N, n, lambda_B, tp)

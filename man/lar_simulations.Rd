@@ -47,7 +47,6 @@ plus casual acquaintances.
 }
 \examples{
 
-
 # Example
 # set population size and number of subsampling
 N <- 100; n <- 4; W <- 10; U <- 20
@@ -55,7 +54,6 @@ N <- 100; n <- 4; W <- 10; U <- 20
 tp <- c(1:5, 51:55, 101:105, 501:505, 601:605)
 # set parameters
 lambda_E <- 0.008; lambda_F <- 0.008
-
 # simulation of Type D
 simulation_D <- lar_simulation_D(N, n, W, tp)
 lar_data <- lar_nonparametric_estimation(simulation_D, tp)
@@ -63,7 +61,6 @@ Aij <- lar_data$Aij
 Ai <- lar_data$Ai
 tauij <- lar_data$tauij
 theta <- round(Model4(Aij, Ai, tauij)$par, 8)
-
 # a plot object
 graph_data <- data.frame(tau=lar_data$tau, g_tau=lar_data$g_tau)
 require(ggplot2)

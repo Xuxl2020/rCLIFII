@@ -1,26 +1,54 @@
 ---
-title: "rCLIFII: composite likelihood inference for individual identifications"
-author: "Xueli Xu, Zhihao Lyu, Ximing Xu"
-output: html_document
+output: github_document
 ---
 
-rCLIFII is an R package for analyzing animal individual identification data using the composite likelihood methods. 
-Package features include simulation, nonparametric estimation of lagged identification rate and lagged association rate, 
-maximum composite likelihood estimation, and model selection. 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# rCLIFII
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of rCLIFII is to ...
 
 ## Installation
 
-Install rCLIFII from Github:
-```r
-install.packages('devtools')
-devtools::install_github('Xuxl2020/rCLIFII')
-```
-or download source file and install locally
-```r
-devtools::install_github('path/to/rCLIFII.tar.gz')
+You can install the development version of rCLIFII like so:
+
+``` r
+# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
 ```
 
-To check if rCLIFII is installed correctly, run:
-```r
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
 library(rCLIFII)
+## basic example code
 ```
+
+What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+
+```{r cars}
+summary(cars)
+```
+
+You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+
+You can also embed plots, for example:
+
+```{r pressure, echo = FALSE}
+plot(pressure)
+```
+
+In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
