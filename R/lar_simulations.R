@@ -43,6 +43,7 @@
 #' # set parameters
 #' lambda_E <- 0.008; lambda_F <- 0.008
 #' # simulation of Type D
+#' library(rCLIFII)
 #' simulation_D <- lar_simulation_D(N, n, W, tp)
 #' lar_data <- lar_nonparametric_estimation(simulation_D, tp)
 #' Aij <- lar_data$Aij
@@ -126,14 +127,7 @@ lar_simulation_D <- function(N, n, W, tp) {
     k = k + 1
   }
 
-  ### problem
-  x <- matrix(0, N, len)
-  for(m in 1:len){
-    x[, m] <- 11^(m - 1)
-  }
-
-  data1 <- data*x
-  matrix_data <- data1
+  matrix_data <- data
   colnames(matrix_data) <- tp
   rownames(matrix_data) <- pop
   simulation_D <- matrix_data
@@ -186,14 +180,7 @@ lar_simulation_E <- function(N, n, W, lambda, tp) {
     k = k + 1
   }
 
-  ### problem
-  x <- matrix(0, N, len)
-  for(m in 1:len){
-    x[, m] <- 11^(m - 1)
-  }
-
-  data1 <- data*x
-  matrix_data <- data1
+  matrix_data <- data
 
   colnames(matrix_data) <- tp
   rownames(matrix_data) <- pop
@@ -248,14 +235,7 @@ lar_simulation_F <- function(N, n, W, U, lambda, tp) {
     k = k + 1
   }
 
-  ### problem
-  x <- matrix(0, N, len)
-  for(m in 1:len){
-    x[, m] <- 11^(m - 1)
-  }
-
-  data1 <- data*x
-  matrix_data <- data1
+  matrix_data <- data
 
   colnames(matrix_data) <- tp
   rownames(matrix_data) <- pop

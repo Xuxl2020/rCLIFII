@@ -55,6 +55,7 @@ tp <- c(1:5, 51:55, 101:105, 501:505, 601:605)
 # set parameters
 lambda_E <- 0.008; lambda_F <- 0.008
 # simulation of Type D
+library(rCLIFII)
 simulation_D <- lar_simulation_D(N, n, W, tp)
 lar_data <- lar_nonparametric_estimation(simulation_D, tp)
 Aij <- lar_data$Aij

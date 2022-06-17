@@ -71,7 +71,7 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
   for (i in 1:(length(tp)-1)) {
     for (j in (i+1):length(tp)){
       tauij[p] <- tp[j] - tp[i]
-      num <- data[, i]*data[, j]*(data[, i]+data[, j])
+      num <- data[, i]*data[, j]*(data[, i]+2*data[, j])*(data[, i]+3*data[, j])
       Aij[p] <- sum(choose(table(num[which(num!=0)]), 2))
       if(sum(num!=0)!=0){
         obj <- data[which(num!=0), i]
@@ -92,6 +92,8 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
   gtauij <- g_m[tauij]/g_n[tauij]
   tau <- unique(tauij)
   g_tau <- g_m[tau]/g_n[tau]
+  idx <- which(g_tau!='NaN')
+  tau <- tau[idx]; g_tau <- g_tau[idx]; g_m <- g_m[idx]; g_n <- g_n[idx]
   g_data <- list(tau=tau, g_tau=g_tau, g_m=g_m, g_n=g_n,
                 Aij=Aij, Ai=Ai, tauij=tauij)
 
