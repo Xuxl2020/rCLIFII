@@ -1,13 +1,16 @@
 #' @name models_internal
 #' @title Build the models
 #'
-#' @param mij The number of individuals identified at both time t_i and t_j.
-#' @param nij The number of individuals identified at time t_i.
-#' @param Aij The number of observed associated individuals (in pairs) observed at both time t_i and t_j.
-#' @param Ai The number of observed associated individuals (in pairs) at time t_i.
-#' @param tauij Time lag between time t_i and t_j.
+#' @param mij The number of individuals identified at both time t_i and t_j
+#' @param nij The number of individuals identified at time t_i
+#' @param Aij The number of observed associated individuals (in pairs) observed at both time t_i and t_j
+#' @param Ai The number of observed associated individuals (in pairs) at time t_i
+#' @param tauij Time lag between time t_i and t_j
 #' @param mtau The maximum allowable lag time.
-#' @param model Models of LIR and LAR.
+#' @param model Models of LIR and LAR, or model is formulated by yourself
+#' @param model_cl_fun If you formulate your model, please input function to calculate the composite likelihood about your model
+#' @param cl.H If you formulate your model, please input the sensitivity matrix with respect to parameters in your model
+#' @param model.K If you formulate your model, please input the number of parameters in your model
 #'
 #' @export
 #' @rdname models_internal
@@ -122,7 +125,7 @@ Model6 <- function(Aij, Ai, tauij, mtau=1000) {
 #' @export
 #' @rdname models_internal
 #'
-lir.model.res <- function(model, mij, nij, tauij, mtau){
+lir.model.res <- function(model, mij, nij, tauij, mtau, model_cl_fun = NULL, cl.H = NULL, model.K = NULL){
   if(model=='Model1') {
     est <- Model1(mij, nij, tauij, mtau)
     sder <- sum(-mij/est$par^2-(nij-mij)/((1-est$par)^2))
@@ -159,7 +162,11 @@ lir.model.res <- function(model, mij, nij, tauij, mtau){
     H <- matrix(c(Hc11,Hc12,Hc13,Hc12,Hc22,Hc23,Hc13,Hc23,Hc33), 3, 3)
     K = 3
   }
-
+  if (model == 'model_cl_fun'){
+    est <- model_cl_fun(mij, nij, tauij, mtau)
+    H <- cl.H
+    K <- model.K
+  }
   par <- est$par
   val <- est$value
   res <- list(H=H, K=K, par=par, val=val)
@@ -169,7 +176,7 @@ lir.model.res <- function(model, mij, nij, tauij, mtau){
 #' @export
 #' @rdname models_internal
 #'
-lar.model.res <- function(model, Aij, Ai, tauij, mtau){
+lar.model.res <- function(model, Aij, Ai, tauij, mtau, model_cl_fun = NULL, cl.H = NULL, model.K = NULL){
   if(model=='Model4') {
     est <- Model4(Aij, Ai, tauij, mtau)
     sder <- sum(-Aij/est$par^2-(Ai-Aij)/((1-est$par)^2))
@@ -201,6 +208,12 @@ lar.model.res <- function(model, Aij, Ai, tauij, mtau){
     Hf33 <- -sum((-Aij/Rtau^2-(Ai-Aij)/(1-Rtau)^2)*(tauij^2*((1-alpha)*exp(-beta*tauij)+alpha)^2*exp(-2*gamma*tauij))+(Aij/Rtau-(Ai-Aij)/(1-Rtau))*(tauij^2*((1-alpha)*exp(-beta*tauij)+alpha)*exp(-gamma*tauij)))
     H <- matrix(c(Hf11,Hf12,Hf13,Hf12,Hf22,Hf23,Hf13,Hf23,Hf33),3,3)
     K = 3
+  }
+
+  if (model == 'model_cl_fun'){
+    est <- model_cl_fun(Aij, Ai, tauij, mtau)
+    H <- cl.H
+    K <- model.K
   }
   par <- est$par
   val <- est$value

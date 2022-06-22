@@ -4,12 +4,16 @@
 #' @name lar_model_selection
 #' @title Model selection for models of lagged association rate
 #' @param X A list or matrix containing the identities of individuals within
-#' study area, and the states or status of individuals during each sampling period.
-#' @param model Models of lagged identification rate, model = 'lar_1', 'lar_2', or 'lar_3'.
-#' @param block_list A block list for a series of observation time. For example,
-#' block_list = list(c(1:5), c(51:55), c(101:105), c(501:505), c(601:605)).
+#' study area, and the states or status of individuals during each sampling period
+#' @param model Models of lagged identification rate, model = 'lar_1', 'lar_2', 'lar_3', or your model 'model_cl_fun'
+#' @param tp A set of observed time
 #' @param group_id Groups of individuals. If X is a list, please input group_id. If X is a matrix,
-#' this parameter can be skipped and takes the default `NULL` value.
+#' this parameter can be skipped and takes the default `NULL` value
+#' @param model_cl_fun If you formulate your model, please input function to calculate the composite likelihood about your model
+#' @param cl.H If you formulate your model, please input the sensitivity matrix with respect to parameters in your model
+#' @param model.K If you formulate your model, please input the number of parameters in your model
+#' @param method The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'
+#' @param k An integer represents k-time-unit intervals
 #' @param nboot The number of bootstrap samples desired
 #' @param mtau The maximum allowable lag time
 #' @param ncores doParallel
@@ -26,12 +30,31 @@
 #' @rdname lar_model_selection
 
 
-lar_model_selection <- function(X, model, block_list, nboot, group_id = NULL, mtau = 1000, ncores = 4, seed = NULL){
-  B <- as.integer(nboot)
-  if (B <= 1){
-    stop("nboot must be a positive integer bigger than 1")
+lar_model_selection <- function(X, model, method, tp,
+                                mtau = 1000,
+                                ncores = 4,
+                                nboot = -1,
+                                k = -1,
+                                group_id = NULL,
+                                model_cl_fun = NULL,
+                                cl.H = NULL,
+                                model.K = NULL,
+                                seed = NULL){
+  tp <- unlist(tp)
+
+  if (method == 'BBootstrap'){
+    B <- as.integer(nboot)
+    if (B <= 1){
+      stop("nboot must be a positive integer bigger than 1")
+    }
   }
-  tp <- unlist(block_list)
+  if (method == 'Jackknife'){
+    k <- as.integer(nboot)
+    if (k <= 1){
+      stop("k must be a positive integer bigger than 1")
+    }
+  }
+
   tT <- max(tp-min(tp))
   len <- length(tp)
   lar_data <- lar_nonparametric_estimation(X, tp, group_id)
@@ -40,29 +63,70 @@ lar_model_selection <- function(X, model, block_list, nboot, group_id = NULL, mt
   Aij <- lar_data$Aij
   Ai <- lar_data$Ai
   tauij <- lar_data$tauij
+
   if(model == 'lar_1'){
-    mod0 <- 'Model4'
+    model = 'Model4'
+    model.H <- lar.model.res('Model4', Aij, Ai, tauij, mtau)$H
+    model.est <- lar.model.res('Model4', Aij, Ai, tauij, mtau)$par
+    model.val <- lar.model.res('Model4', Aij, Ai, tauij, mtau)$val
+    model.K <- lar.model.res('Model4', Aij, Ai, tauij, mtau)$K
   }
   if(model == 'lar_2'){
-    mod0 <- 'Model5'
+    model = 'Model5'
+    model.H <- lar.model.res('Model5', Aij, Ai, tauij, mtau)$H
+    model.est <- lar.model.res('Model5', Aij, Ai, tauij, mtau)$par
+    model.val <- lar.model.res('Model5', Aij, Ai, tauij, mtau)$val
+    model.K <- lar.model.res('Model5', Aij, Ai, tauij, mtau)$K
   }
   if(model == 'lar_3'){
-    mod0 <- 'Model6'
+    model = 'Model6'
+    model.H <- lar.model.res('Model6', Aij, Ai, tauij, mtau)$H
+    model.est <- lar.model.res('Model6', Aij, Ai, tauij, mtau)$par
+    model.val <- lar.model.res('Model6', Aij, Ai, tauij, mtau)$val
+    model.K <- lar.model.res('Model6', Aij, Ai, tauij, mtau)$K
   }
-  model.H <- lar.model.res(mod0, Aij, Ai, tauij, mtau)$H
-  model.est <- lar.model.res(mod0, Aij, Ai, tauij, mtau)$par
-  model.val <- lar.model.res(mod0, Aij, Ai, tauij, mtau)$val
-  model.K <- lar.model.res(mod0, Aij, Ai, tauij, mtau)$K
+  if (model == 'model_cl_fun') {
+    model.H <- cl.H
+    model.est <- model_cl_fun(Aij, Ai, tauij, mtau)$par
+    model.val <- model_cl_fun(Aij, Ai, tauij, mtau)$val
+    model.K <- model.K
+  }
+
+  if (method == 'Jackknife'){
+    if (k > 0){
+      jsamples <- jackknife(X, tp, k)
+    }
+
+    RESULTS <- matrix(0, length(jsamples), length(model.est))
+    for(j in 1:length(jsamples)){
+      tp0 = as.numeric(colnames(jsamples[[j]]))
+      lar_data <- lar_nonparametric_estimation(as.matrix(jsamples[[j]]), tp0)
+      Aij <- lar_data$Aij
+      Ai <- lar_data$Ai
+      tauij <- lar_data$tauij
+      if (model == 'model_cl_fun'){
+        RESULTS[j,] <- model_cl_fun(Aij, Ai, tauij, mtau)$par
+      } else {
+        RESULTS[j,] <- lar.model.res(model, Aij, Ai, tauij, mtau)$par
+      }
+    }
+  }
+  if (method == 'BBootstrap'){
   if(ncores>1){
     cl <- parallel::makeCluster(ncores) # not to overload your computer
     doParallel::registerDoParallel(cl)
     RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
-      sampboot <- lar_bootstrap(X, block_list, group_id, seed)
+      tp_list <- bin_make(tp, k)
+      sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
       dat <- lar_nonparametric_estimation(sampboot, tp, group_id)
       Aij <- dat$Aij
       Ai <- dat$Ai
       tauij <- dat$tauij
-      res <- lar.model.res(model=mod0, Aij=Aij, Ai=Ai, tauij=tauij, mtau)
+      if (model == 'model_cl_fun'){
+        res <- model_cl_fun(Aij, Ai, tauij, mtau)
+      } else {
+        res <- lar.model.res(model, Aij, Ai, tauij, mtau)
+      }
       out <- res$par
       return(out)
     })
@@ -70,16 +134,23 @@ lar_model_selection <- function(X, model, block_list, nboot, group_id = NULL, mt
   }else{
     RESULTS <- matrix(0, B, model.K)
     for(i in seq_len(B)){
-      sampboot <- lar_bootstrap(X, block_list, group_id, seed)
+      tp_list <- bin_make(tp, k)
+      sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
       dat <- lar_nonparametric_estimation(sampboot, tp, group_id)
       Aij <- dat$Aij
       Ai <- dat$Ai
       tauij <- dat$tauij
-      res <- lar.model.res(model=mod0, Aij=Aij, Ai=Ai, tauij=tauij, mtau)
-      out <- res$par
+      if (model == 'model_cl_fun'){
+        RESULTS[j,] <- model_cl_fun(Aij, Ai, tauij, mtau)$par
+      } else {
+        RESULTS[j,] <- lar.model.res(model, Aij, Ai, tauij, mtau)$par
+      }
+      out <- RESULTS$par
       RESULTS[i,] <- out
     }
   }
+  }
+
   dimpara <- sum(diag(model.H%*%(stats::var(RESULTS))))
   AIC <- 2*model.val + 2*model.K
   estimation_c <- lar_estimation_c(g_m, g_n, Aij, Ai, tauij, mtau)

@@ -9,27 +9,42 @@ lir_model_selection(
   n,
   tp,
   model,
-  nboot,
-  mtau = 1000,
+  method,
   ncores = 4,
+  mtau = 1000,
+  nboot = -1,
+  k = -1,
+  model_cl_fun = NULL,
+  cl.H = NULL,
+  model.K = NULL,
   seed = NULL
 )
 }
 \arguments{
 \item{X}{A list or matrix containing the identities of individuals identified in each sampling period}
 
-\item{n}{A vector or a positive integer, representing the number of individuals identified in each sampling period.
-It indicates the same number of individuals identified in all sampling periods if a positive integer.}
+\item{n}{A vector or a positive integer, representing the number of individuals identified in each sampling period
+It indicates the same number of individuals identified in all sampling periods if a positive integer}
 
-\item{tp}{A set of observed time.}
+\item{tp}{A set of observed time}
 
-\item{model}{Models of lagged identification rate, model = 'lir_1', 'lir_2', or 'lir_3'.}
+\item{model}{Models of lagged identification rate, model = 'lir_1', 'lir_2', 'lir_3', or formulate model by yourself 'model_cl_fun'}
 
-\item{nboot}{The number of bootstrap samples desired}
+\item{method}{The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'}
+
+\item{ncores}{doParallel.}
 
 \item{mtau}{The maximum allowable lag time.}
 
-\item{ncores}{doParallel.}
+\item{nboot}{The number of bootstrap samples desired}
+
+\item{k}{An integer represents k-time-unit intervals}
+
+\item{model_cl_fun}{If you formulate your model, please input function to calculate the composite likelihood about your model}
+
+\item{cl.H}{If you formulate your model, please input the sensitivity matrix with respect to parameters in your model}
+
+\item{model.K}{If you formulate your model, please input the number of parameters in your model}
 
 \item{seed}{Random seed.}
 }

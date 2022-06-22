@@ -3,11 +3,16 @@
 #' @title Model selection for models of lagged identification rate
 #'
 #' @param X A list or matrix containing the identities of individuals identified in each sampling period
-#' @param model Models of lagged identification rate, model = 'lir_1', 'lir_2', or 'lir_3'.
-#' @param n A vector or a positive integer, representing the number of individuals identified in each sampling period.
-#' It indicates the same number of individuals identified in all sampling periods if a positive integer.
-#' @param tp A set of observed time.
+#' @param n A vector or a positive integer, representing the number of individuals identified in each sampling period
+#' It indicates the same number of individuals identified in all sampling periods if a positive integer
+#' @param tp A set of observed time
+#' @param model Models of lagged identification rate, model = 'lir_1', 'lir_2', 'lir_3', or formulate model by yourself 'model_cl_fun'
+#' @param model_cl_fun If you formulate your model, please input function to calculate the composite likelihood about your model
+#' @param cl.H If you formulate your model, please input the sensitivity matrix with respect to parameters in your model
+#' @param model.K If you formulate your model, please input the number of parameters in your model
+#' @param method The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'
 #' @param nboot The number of bootstrap samples desired
+#' @param k An integer represents k-time-unit intervals
 #' @param mtau The maximum allowable lag time.
 #' @param ncores doParallel.
 #' @param seed Random seed.
@@ -23,7 +28,15 @@
 #' @rdname lir_model_selection
 
 
-lir_model_selection <- function(X, n, tp, model, nboot, mtau = 1000, ncores = 4, seed = NULL){
+lir_model_selection <- function(X, n, tp, model, method,
+                                ncores = 4,
+                                mtau = 1000,
+                                nboot = -1,
+                                k = -1,
+                                model_cl_fun = NULL,
+                                cl.H = NULL,
+                                model.K = NULL,
+                                seed = NULL){
 
   tp <- tp-min(tp)+1
 
@@ -35,11 +48,18 @@ lir_model_selection <- function(X, n, tp, model, nboot, mtau = 1000, ncores = 4,
     n <- rep(n, length(tp))
   }
 
-  B <- as.integer(nboot)
-  if (B <= 1){
-    stop("nboot must be a positive integer bigger than 1")
+  if (method == 'Bootstrap'|method == 'BBootstrap'){
+    B <- as.integer(nboot)
+    if (B <= 1){
+      stop("nboot must be a positive integer bigger than 1")
+    }
   }
-
+  if (method == 'Jackknife'){
+    k <- as.integer(nboot)
+    if (k <= 1){
+      stop("k must be a positive integer bigger than 1")
+    }
+  }
   tT <- max(tp-min(tp))
   len <- length(tp)
 
@@ -52,30 +72,74 @@ lir_model_selection <- function(X, n, tp, model, nboot, mtau = 1000, ncores = 4,
   tauij <- lir_data$tauij
 
   if(model == 'lir_1'){
-    mod0 <- 'Model1'
+    model = 'Model1'
+    model.H <- lir.model.res(model, mij, nij, tauij, mtau)$H
+    model.est <- lir.model.res(model, mij, nij, tauij, mtau)$par
+    model.val <- lir.model.res(model, mij, nij, tauij, mtau)$val
+    model.K <- lir.model.res(model, mij, nij, tauij, mtau)$K
   }
   if(model == 'lir_2'){
-    mod0 <- 'Model2'
+    model = 'Model2'
+    model.H <- lir.model.res('Model2', mij, nij, tauij, mtau)$H
+    model.est <- lir.model.res('Model2', mij, nij, tauij, mtau)$par
+    model.val <- lir.model.res('Model2', mij, nij, tauij, mtau)$val
+    model.K <- lir.model.res('Model2', mij, nij, tauij, mtau)$K
   }
   if(model == 'lir_3'){
-    mod0 <- 'Model3'
+    model = 'Model3'
+    model.H <- lir.model.res('Model3', mij, nij, tauij, mtau)$H
+    model.est <- lir.model.res('Model3', mij, nij, tauij, mtau)$par
+    model.val <- lir.model.res('Model3', mij, nij, tauij, mtau)$val
+    model.K <- lir.model.res('Model3', mij, nij, tauij, mtau)$K
   }
 
-  model.H <- lir.model.res(mod0, mij, nij, tauij, mtau)$H
-  model.est <- lir.model.res(mod0, mij, nij, tauij, mtau)$par
-  model.val <- lir.model.res(mod0, mij, nij, tauij, mtau)$val
-  model.K <- lir.model.res(mod0, mij, nij, tauij, mtau)$K
+  if (model == 'model_cl_fun'){
+    model.H <- cl.H
+    model.est <- model_cl_fun(mij, nij, tauij, mtau)$par
+    model.val <- model_cl_fun(mij, nij, tauij, mtau)$val
+    model.K <- model.K
+  }
 
+  if (method == 'Jackknife'){
+    if (k > 0){
+      jsamples <- jackknife(X, tp, k)
+    }
+
+    RESULTS <- matrix(0, length(jsamples), length(model.est))
+    for(j in 1:length(jsamples)){
+      tp0 = as.numeric(colnames(jsamples[[j]]))
+      lir_data <- lir_nonparametric_estimation(as.matrix(jsamples[[j]]), n, tp0)
+      mij <- lir_data$mij
+      nij <- lir_data$nij
+      tauij <- lir_data$tauij
+      if (model == 'model_cl_fun'){
+        RESULTS[j,] <- model_cl_fun(mij, nij, tauij, mtau)$par
+      } else {
+        RESULTS[j,] <- lir.model.res(model, mij, nij, tauij, mtau)$par
+      }
+    }
+  }
+  if (method == 'Bootstrap'| method == 'BBootstrap'){
   if(ncores>1){
     cl <- parallel::makeCluster(ncores) # not to overload your computer
     doParallel::registerDoParallel(cl)
     RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
-      sampboot <- lir_bootstrap(X, tp, seed)
+      if (method == 'Bootstrap'){
+        sampboot <- lir_bootstrap(X, tp, seed)
+      }
+      if (method == 'BBootstrap'){
+        tp_list <- bin_make(tp, k)
+        sampboot <- lar_bootstrap(X, tp_list)
+      }
       dat <- lir_nonparametric_estimation(sampboot, n, tp)
       mij <- dat$mij
       nij <- dat$nij
       tauij <- dat$tauij
-      res <- lir.model.res(model=mod0, mij=mij, nij=nij, tauij=tauij, mtau)
+      if (model == 'model_cl_fun'){
+        res <- model_cl_fun(mij, nij, tauij, mtau)
+      } else {
+        res <- lir.model.res(model, mij, nij, tauij, mtau)
+      }
       out <- res$par
       return(out)
     })
@@ -83,24 +147,33 @@ lir_model_selection <- function(X, n, tp, model, nboot, mtau = 1000, ncores = 4,
   }else{
     RESULTS <- matrix(0, B, model.K)
     for(i in seq_len(B)){
-      sampboot <- lir_bootstrap(X, tp, seed)
+      if (method == 'Bootstrap'){
+        sampboot <- lir_bootstrap(X, tp)
+      }
+      if (method == 'BBootstrap'){
+        tp_list <- bin_make(tp, k)
+        sampboot <- lar_bootstrap(X, tp_list)
+      }
       dat <- lir_nonparametric_estimation(sampboot, n, tp)
       mij <- dat$mij
       nij <- dat$nij
       tauij <- dat$tauij
-      res <- lir.model.res(model=mod0, mij=mij, nij=nij, tauij=tauij, mtau)
-      out <- res$par
-      RESULTS[i,] <- out
+      if (model == 'model_cl_fun'){
+        RESULTS[j,] <- model_cl_fun(mij, nij, tauij, mtau)$par
+      } else {
+        RESULTS[j,] <- lir.model.res(model, mij, nij, tauij, mtau)$par
       }
+      out <- RESULTS$par
+      RESULTS[i,] <- out
+    }
   }
-
-    dimpara <- sum(diag(model.H%*%(stats::var(RESULTS))))
-    AIC <- 2*model.val + 2*model.K
-    estimation_c <- lir_estimation_c(R_m, R_n, mij, nij, tauij, mtau)
-    QAIC <- 2*model.val/estimation_c + 2*model.K
-    CLIC <- 2*model.val + dimpara
-    res <- data.frame(AIC=AIC, QAIC=QAIC, CLIC=CLIC)
-    return(res)
 }
-
+  dimpara <- sum(diag(model.H%*%(stats::var(RESULTS))))
+  AIC <- 2*model.val + 2*model.K
+  estimation_c <- lir_estimation_c(R_m, R_n, mij, nij, tauij, mtau)
+  QAIC <- 2*model.val/estimation_c + 2*model.K
+  CLIC <- 2*model.val + dimpara
+  res <- data.frame(AIC=AIC, QAIC=QAIC, CLIC=CLIC)
+  return(res)
+}
 

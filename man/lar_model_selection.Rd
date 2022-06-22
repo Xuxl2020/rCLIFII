@@ -7,31 +7,45 @@
 lar_model_selection(
   X,
   model,
-  block_list,
-  nboot,
-  group_id = NULL,
+  method,
+  tp,
   mtau = 1000,
   ncores = 4,
+  nboot = -1,
+  k = -1,
+  group_id = NULL,
+  model_cl_fun = NULL,
+  cl.H = NULL,
+  model.K = NULL,
   seed = NULL
 )
 }
 \arguments{
 \item{X}{A list or matrix containing the identities of individuals within
-study area, and the states or status of individuals during each sampling period.}
+study area, and the states or status of individuals during each sampling period}
 
-\item{model}{Models of lagged identification rate, model = 'lar_1', 'lar_2', or 'lar_3'.}
+\item{model}{Models of lagged identification rate, model = 'lar_1', 'lar_2', 'lar_3', or your model 'model_cl_fun'}
 
-\item{block_list}{A block list for a series of observation time. For example,
-block_list = list(c(1:5), c(51:55), c(101:105), c(501:505), c(601:605)).}
+\item{method}{The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'}
 
-\item{nboot}{The number of bootstrap samples desired}
-
-\item{group_id}{Groups of individuals. If X is a list, please input group_id. If X is a matrix,
-this parameter can be skipped and takes the default \code{NULL} value.}
+\item{tp}{A set of observed time}
 
 \item{mtau}{The maximum allowable lag time}
 
 \item{ncores}{doParallel}
+
+\item{nboot}{The number of bootstrap samples desired}
+
+\item{k}{An integer represents k-time-unit intervals}
+
+\item{group_id}{Groups of individuals. If X is a list, please input group_id. If X is a matrix,
+this parameter can be skipped and takes the default \code{NULL} value}
+
+\item{model_cl_fun}{If you formulate your model, please input function to calculate the composite likelihood about your model}
+
+\item{cl.H}{If you formulate your model, please input the sensitivity matrix with respect to parameters in your model}
+
+\item{model.K}{If you formulate your model, please input the number of parameters in your model}
 
 \item{seed}{Random seed}
 }
