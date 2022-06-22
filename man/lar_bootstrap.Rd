@@ -33,7 +33,7 @@ For more details on this function, please see the block bootstrap sampling for t
 # load data
 data(simulationD)
 block_list <- simulationD@block_list
-group_id <- simulationD@group_id
+group_id <- simulationD@group.id
 # if X is a list
 list_simulation_D <- simulationD@list_simulation_D
 bootstrap_sample <- lar_bootstrap(list_simulation_D, block_list, group_id)

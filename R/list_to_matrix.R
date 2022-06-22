@@ -37,7 +37,7 @@ list_to_matrix <- function(obj, tp, group_id = NULL){
   }else{
     for (i in seq_len(time_point_number)){
       idx <- match(obj[[observed_time[i]]], individual_ids)
-      data[idx, i] <- group_id[[observed_time[i]]][idx]
+      data[idx, i] <- group_id[[observed_time[i]]]
     }
   }
   data <- as.matrix(data)

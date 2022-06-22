@@ -108,7 +108,7 @@ lir_model_selection <- function(X, n, tp, model, method,
     RESULTS <- matrix(0, length(jsamples), length(model.est))
     for(j in 1:length(jsamples)){
       tp0 = as.numeric(colnames(jsamples[[j]]))
-      lir_data <- lir_nonparametric_estimation(as.matrix(jsamples[[j]]), n, tp0)
+      lir_data <- lir_nonparametric_estimation(as.matrix(jsamples[[j]]), n[tp %in% tp0], tp0)
       mij <- lir_data$mij
       nij <- lir_data$nij
       tauij <- lir_data$tauij
