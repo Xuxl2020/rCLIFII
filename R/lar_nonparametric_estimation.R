@@ -60,34 +60,6 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
     data <- X
   }
 
-  # tT <- max(tp)
-  # g_m <- rep(0, tT)
-  # g_n <- rep(0, tT)
-  # Aij <- c()
-  # Ai <- c()
-  # tauij <- c()
-  # p <- 1
-  # for (i in 1:(length(tp)-1)) {
-  #   for (j in (i+1):length(tp)){
-  #     tauij[p] <- tp[j] - tp[i]
-  #     num <- data[, i]*data[, j]*(data[, i]+2*data[, j])*(data[, i]+3*data[, j])
-  #     Aij[p] <- sum(choose(table(num[which(num!=0)]), 2))
-  #     if(sum(num!=0)!=0){
-  #       obj <- data[which(num!=0), i]
-  #       s <- 0
-  #       for(g in 1:length(obj)){
-  #         s <- s + sum(data[which(num!=0)[g]:dim(data)[1],i]==obj[g])
-  #       }
-  #       Ai[p] <- s - length(obj)
-  #     }else{
-  #       Ai[p] <- 0
-  #     }
-  #     g_m[tp[j]-tp[i]] <- g_m[tp[j]-tp[i]] + Aij[p]
-  #     g_n[tp[j]-tp[i]] <- g_n[tp[j]-tp[i]] + Ai[p]
-  #     p <- p + 1
-  #   }
-  # }
-
   tT <- max(tp)
   g_m <- rep(0, tT)
   g_n <- rep(0, tT)
@@ -99,13 +71,18 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
   for (i in 1:(length(tp)-1)) {
     for (j in (i+1):length(tp)){
       tauij[p] <- tp[j] - tp[i]
-      num <- data[, i]*data[, j]*(data[, i]+2*data[, j])*(data[, i]+3*data[, j])
-      num <- data[, i]*data[, j]
+      num <- data[, i]*data[, j]*(data[, i] + 3*data[, j])*(data[, i] + 10*data[, j])
       Aij[p] <- 2*sum(choose(table(num[which(num!=0)]), 2))
-      Ai[p] <- sum(choose(table(data[which(data[, i]!=0), i]), 2))
+
+      idx <- which(data[,i]!=0)
+      data_list <- split(data[idx, j], data[idx,i])
+      Ai[p] <- sum(sapply(data_list, function(x)(length(x)-1)*(length(x)-sum(x==0))))
+
       g_m[tp[j]-tp[i]] <- g_m[tp[j]-tp[i]] + Aij[p]
       g_n[tp[j]-tp[i]] <- g_n[tp[j]-tp[i]] + Ai[p]
+
       p <- p + 1
+
     }
   }
 
