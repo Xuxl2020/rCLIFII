@@ -13,7 +13,7 @@
 #' @param cl.H If you formulate your model, please input the sensitivity matrix with respect to parameters in your model
 #' @param model.K If you formulate your model, please input the number of parameters in your model
 #' @param method The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'
-#' @param k An integer represents k-time-unit intervals
+#' @param bin_len An integer represents len-time-unit intervals
 #' @param nboot The number of bootstrap samples desired
 #' @param mtau The maximum allowable lag time
 #' @param ncores doParallel
@@ -34,7 +34,7 @@ lar_model_selection <- function(X, model, method, tp,
                                 mtau = 1000,
                                 ncores = 4,
                                 nboot = -1,
-                                k = -1,
+                                bin_len = -1,
                                 group_id = NULL,
                                 model_cl_fun = NULL,
                                 cl.H = NULL,
@@ -49,9 +49,9 @@ lar_model_selection <- function(X, model, method, tp,
     }
   }
   if (method == 'Jackknife'){
-    k <- as.integer(nboot)
-    if (k <= 1){
-      stop("k must be a positive integer bigger than 1")
+    num_bin <- as.integer(nboot)
+    if (num_bin <= 1){
+      stop("num_bin must be a positive integer bigger than 1")
     }
   }
 
@@ -93,8 +93,8 @@ lar_model_selection <- function(X, model, method, tp,
   }
 
   if (method == 'Jackknife'){
-    if (k > 0){
-      jsamples <- jackknife(X, tp, k)
+    if (bin_len > 0){
+      jsamples <- jackknife(X, tp, bin_len)
     }
 
     RESULTS <- matrix(0, length(jsamples), length(model.est))
@@ -116,7 +116,7 @@ lar_model_selection <- function(X, model, method, tp,
     cl <- parallel::makeCluster(ncores) # not to overload your computer
     doParallel::registerDoParallel(cl)
     RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
-      tp_list <- bin_make(tp, k)
+      tp_list <- bin_make(tp, bin_len)
       sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
       dat <- lar_nonparametric_estimation(sampboot, tp, group_id)
       Aij <- dat$Aij
@@ -134,7 +134,7 @@ lar_model_selection <- function(X, model, method, tp,
   }else{
     RESULTS <- matrix(0, B, model.K)
     for(i in seq_len(B)){
-      tp_list <- bin_make(tp, k)
+      tp_list <- bin_make(tp, bin_len)
       sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
       dat <- lar_nonparametric_estimation(sampboot, tp, group_id)
       Aij <- dat$Aij

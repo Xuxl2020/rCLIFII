@@ -14,7 +14,7 @@ NULL
 #'
 #' @param X A list or matrix containing animal movement or social structure data
 #' @param tp A set of observation time
-#' @param k An integer represents k-time-unit intervals
+#' @param bin_len An integer represents len-time-unit intervals
 #'
 #' @return The jackknife samples of animal movement or social structure data.
 #'
@@ -37,13 +37,13 @@ NULL
 #' tp <- simulationA@tp
 #' # if X is a list
 #' list_simulation_A <- simulationA@list_simulation_A
-#' jackknife_sample <- jackknife(list_simulation_A, tp, k=50)
+#' jackknife_sample <- jackknife(list_simulation_A, tp, bin_len=50)
 #' # if X is a matrix
 #' matrix_simulation_A <- simulationA@matrix_simulation_A
-#' jackknife_sample <- jackknife(matrix_simulation_A, tp, k=50)
+#' jackknife_sample <- jackknife(matrix_simulation_A, tp, bin_len=50)
 #'
 
-jackknife <- function(X, tp, k) {
+jackknife <- function(X, tp, bin_len) {
 
   # Check arguments for errors
   if(!(class(X)[1] %in% c("list", "matrix"))) {
@@ -76,7 +76,7 @@ jackknife <- function(X, tp, k) {
   unique_observed_individual <- observed_individual[!duplicated(observed_individual)]
 
   # update sample
-  bin <- bin_make(tp, k)
+  bin <- bin_make(tp, bin_len)
   jackknife_sample <- list()
 
   for (i in 1:length(bin)){

@@ -13,7 +13,7 @@ lir_model_selection(
   ncores = 4,
   mtau = 1000,
   nboot = -1,
-  k = -1,
+  bin_len = -1,
   model_cl_fun = NULL,
   cl.H = NULL,
   model.K = NULL,
@@ -38,7 +38,7 @@ It indicates the same number of individuals identified in all sampling periods i
 
 \item{nboot}{The number of bootstrap samples desired}
 
-\item{k}{An integer represents k-time-unit intervals}
+\item{bin_len}{An integer represents len-time-unit intervals}
 
 \item{model_cl_fun}{If you formulate your model, please input function to calculate the composite likelihood about your model}
 

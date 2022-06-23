@@ -12,7 +12,7 @@ lar_model_selection(
   mtau = 1000,
   ncores = 4,
   nboot = -1,
-  k = -1,
+  bin_len = -1,
   group_id = NULL,
   model_cl_fun = NULL,
   cl.H = NULL,
@@ -36,7 +36,7 @@ study area, and the states or status of individuals during each sampling period}
 
 \item{nboot}{The number of bootstrap samples desired}
 
-\item{k}{An integer represents k-time-unit intervals}
+\item{bin_len}{An integer represents len-time-unit intervals}
 
 \item{group_id}{Groups of individuals. If X is a list, please input group_id. If X is a matrix,
 this parameter can be skipped and takes the default \code{NULL} value}

@@ -4,14 +4,14 @@
 \alias{jackknife}
 \title{Nonparametric jackknife resampling for animal movement (social structure) data}
 \usage{
-jackknife(X, tp, k)
+jackknife(X, tp, bin_len)
 }
 \arguments{
 \item{X}{A list or matrix containing animal movement or social structure data}
 
 \item{tp}{A set of observation time}
 
-\item{k}{An integer represents k-time-unit intervals}
+\item{bin_len}{An integer represents len-time-unit intervals}
 }
 \value{
 The jackknife samples of animal movement or social structure data.
@@ -27,10 +27,10 @@ data(simulationA)
 tp <- simulationA@tp
 # if X is a list
 list_simulation_A <- simulationA@list_simulation_A
-jackknife_sample <- jackknife(list_simulation_A, tp, k=50)
+jackknife_sample <- jackknife(list_simulation_A, tp, bin_len=50)
 # if X is a matrix
 matrix_simulation_A <- simulationA@matrix_simulation_A
-jackknife_sample <- jackknife(matrix_simulation_A, tp, k=50)
+jackknife_sample <- jackknife(matrix_simulation_A, tp, bin_len=50)
 
 }
 \references{
