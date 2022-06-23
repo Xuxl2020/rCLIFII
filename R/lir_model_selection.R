@@ -12,7 +12,7 @@
 #' @param model.K If you formulate your model, please input the number of parameters in your model
 #' @param method The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'
 #' @param nboot The number of bootstrap samples desired
-#' @param k An integer represents k-time-unit intervals
+#' @param bin_len An integer represents len-time-unit intervals
 #' @param mtau The maximum allowable lag time.
 #' @param ncores doParallel.
 #' @param seed Random seed.
@@ -32,7 +32,7 @@ lir_model_selection <- function(X, n, tp, model, method,
                                 ncores = 4,
                                 mtau = 1000,
                                 nboot = -1,
-                                k = -1,
+                                bin_len = -1,
                                 model_cl_fun = NULL,
                                 cl.H = NULL,
                                 model.K = NULL,
@@ -55,9 +55,9 @@ lir_model_selection <- function(X, n, tp, model, method,
     }
   }
   if (method == 'Jackknife'){
-    k <- as.integer(nboot)
-    if (k <= 1){
-      stop("k must be a positive integer bigger than 1")
+    num_bin <- as.integer(nboot)
+    if (num_bin <= 1){
+      stop("num_bin must be a positive integer bigger than 1")
     }
   }
   tT <- max(tp-min(tp))
@@ -93,16 +93,16 @@ lir_model_selection <- function(X, n, tp, model, method,
     model.K <- lir.model.res('Model3', mij, nij, tauij, mtau)$K
   }
 
-  if (model == 'model_cl_fun'){
+  if(model == 'model_cl_fun'){
     model.H <- cl.H
     model.est <- model_cl_fun(mij, nij, tauij, mtau)$par
     model.val <- model_cl_fun(mij, nij, tauij, mtau)$val
     model.K <- model.K
   }
 
-  if (method == 'Jackknife'){
-    if (k > 0){
-      jsamples <- jackknife(X, tp, k)
+  if(method == 'Jackknife'){
+    if (bin_len > 0){
+      jsamples <- jackknife(X, tp, bin_len)
     }
 
     RESULTS <- matrix(0, length(jsamples), length(model.est))
@@ -128,7 +128,7 @@ lir_model_selection <- function(X, n, tp, model, method,
         sampboot <- lir_bootstrap(X, tp, seed)
       }
       if (method == 'BBootstrap'){
-        tp_list <- bin_make(tp, k)
+        tp_list <- bin_make(tp, bin_len)
         sampboot <- lar_bootstrap(X, tp_list)
       }
       dat <- lir_nonparametric_estimation(sampboot, n, tp)
@@ -151,7 +151,7 @@ lir_model_selection <- function(X, n, tp, model, method,
         sampboot <- lir_bootstrap(X, tp)
       }
       if (method == 'BBootstrap'){
-        tp_list <- bin_make(tp, k)
+        tp_list <- bin_make(tp, bin_len)
         sampboot <- lar_bootstrap(X, tp_list)
       }
       dat <- lir_nonparametric_estimation(sampboot, n, tp)
