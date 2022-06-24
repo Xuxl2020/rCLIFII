@@ -72,11 +72,10 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
     for (j in (i+1):length(tp)){
       tauij[p] <- tp[j] - tp[i]
       num <- data[, i]*data[, j]*(data[, i] + 3*data[, j])*(data[, i] + 10*data[, j])
-      Aij[p] <- 2*sum(choose(table(num[which(num!=0)]), 2))
+      Aij[p] <- sum(choose(table(num[which(num!=0)]), 2))
 
       idx <- which(data[,i]!=0)
-      data_list <- split(data[idx, j], data[idx,i])
-      Ai[p] <- sum(sapply(data_list, function(x)(length(x)-1)*(length(x)-sum(x==0))))
+      Ai[p] <- sum(choose(table(data[idx,i]), 2))
 
       g_m[tp[j]-tp[i]] <- g_m[tp[j]-tp[i]] + Aij[p]
       g_n[tp[j]-tp[i]] <- g_n[tp[j]-tp[i]] + Ai[p]
