@@ -172,7 +172,7 @@ lir_model_selection <- function(X, n, tp, model, method,
   AIC <- 2*model.val + 2*model.K
   estimation_c <- lir_estimation_c(R_m, R_n, mij, nij, tauij, mtau)
   QAIC <- 2*model.val/estimation_c + 2*model.K
-  CLIC <- 2*model.val + dimpara
+  CLIC <- model.val + dimpara
   res <- data.frame(AIC=AIC, QAIC=QAIC, CLIC=CLIC)
   return(res)
 }
