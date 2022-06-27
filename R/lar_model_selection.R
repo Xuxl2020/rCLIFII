@@ -155,7 +155,7 @@ lar_model_selection <- function(X, model, method, tp,
   AIC <- 2*model.val + 2*model.K
   estimation_c <- lar_estimation_c(g_m, g_n, Aij, Ai, tauij, mtau)
   QAIC <- 2*model.val/estimation_c + 2*model.K
-  CLIC <- 2*model.val + dimpara
+  CLIC <- model.val + dimpara
   res <- data.frame(AIC=AIC, QAIC=QAIC, CLIC=CLIC)
   return(res)
 }
