@@ -92,7 +92,7 @@ lir_nonparametric_estimation <- function(X, n, tp) {
   }
 
   R_tauij <- R_m[tauij]/R_n[tauij]
-  tau <- tauij[!duplicated(tauij)]
+  tau <- tauij
   R_tau <- R_m[tau]/R_n[tau]
   R_data <- list(R_tau=R_tau, tau=tau, R_m=R_m, R_n=R_n,
                  mij=mij, nij=nij, tauij=tauij)
