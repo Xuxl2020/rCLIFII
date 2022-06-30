@@ -87,7 +87,7 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
   }
 
   gtauij <- g_m[tauij]/g_n[tauij]
-  tau <- unique(tauij)
+  tau <- tauij
   g_tau <- g_m[tau]/g_n[tau]
 
   g_data <- list(tau=tau, g_tau=g_tau, g_m=g_m, g_n=g_n,
