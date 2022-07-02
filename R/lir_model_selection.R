@@ -146,7 +146,7 @@ lir_model_selection <- function(X, n, tp, model, method,
     parallel::stopCluster(cl)
   }else{
     RESULTS <- matrix(0, B, model.K)
-    for(i in seq_len(B)){
+    for(s in seq_len(B)){
       if (method == 'Bootstrap'){
         sampboot <- lir_bootstrap(X, tp)
       }
@@ -159,13 +159,10 @@ lir_model_selection <- function(X, n, tp, model, method,
       nij <- dat$nij
       tauij <- dat$tauij
       if (model == 'model_cl_fun'){
-        RESULTS[j,] <- model_cl_fun(mij, nij, tauij, mtau)$par
+        RESULTS[s,] <- model_cl_fun(mij, nij, tauij, mtau)$par
       } else {
-        RESULTS[j,] <- lir.model.res(model, mij, nij, tauij, mtau)$par
+        RESULTS[s,] <- lir.model.res(model, mij, nij, tauij, mtau)$par
       }
-      out <- RESULTS$par
-      RESULTS[i,] <- out
-    }
   }
 }
   dimpara <- sum(diag(model.H%*%(stats::var(RESULTS))))
