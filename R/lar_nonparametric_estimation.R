@@ -75,9 +75,14 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
       Aij[p] <- 2*sum(choose(table(num[which(num!=0)]), 2))
       
       idx <- which(data[,i]!=0)
-      data_list <- split(data[idx, j], data[idx,i])
-      Ai[p] <- sum(sapply(data_list, function(x)(length(x)-1)*(length(x)-sum(x==0))))
-
+      if(length(idx)==0){
+      Ai[p] <- 0
+      }
+      if(length(idx)!=0){
+        data_list <- split(data[idx, j], data[idx,i])
+        Ai[p] <- sum(sapply(data_list, function(x)(length(x)-1)*(length(x)-sum(x==0))))
+      }
+                         
       g_m[tp[j]-tp[i]] <- g_m[tp[j]-tp[i]] + Aij[p]
       g_n[tp[j]-tp[i]] <- g_n[tp[j]-tp[i]] + Ai[p]
 
@@ -87,7 +92,8 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
   }
 
   gtauij <- g_m[tauij]/g_n[tauij]
-  tau <- tauij
+  gtauij <- gtauij[gtauij!=NaN]                       
+  tau <- tauij[gtauij!=NaN] 
   g_tau <- g_m[tau]/g_n[tau]
 
   g_data <- list(tau=tau, g_tau=g_tau, g_m=g_m, g_n=g_n,
