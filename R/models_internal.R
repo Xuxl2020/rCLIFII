@@ -147,10 +147,10 @@ lir.model.res <- function(model, mij, nij, tauij, mtau, model_cl_fun = NULL, cl.
   }
   if (model=='Model3') {
     est <- Model3(mij, nij, tauij, mtau)
-    alpha <- est$par[1]
+    alpha <- est$par[3]
     beta <- est$par[2]
-    gamma <- est$par[3]
-    Rtau <- alpha*exp(-beta*tauij) + gamma
+    gamma <- est$par[1]
+    Rtau <- gamma*exp(-beta*tauij) + alpha
     Hc11 <- sum(exp(-beta*tauij)^2*( mij/Rtau^2+(nij-mij)/(1-Rtau)^2 ))
     Hc22 <- sum(alpha*exp(-beta*tauij)*tauij^2*(-mij/Rtau+(nij-mij)/(1-Rtau)) +
                   (alpha*exp(-beta*tauij)*tauij)^2*(mij/Rtau^2+(nij-mij)/(1-Rtau)^2) )
