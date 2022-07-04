@@ -7,6 +7,7 @@
 #' @param tp A set of observation time.
 #' @param group_id Groups of individuals. If X is a list, please input group_id. If X is a matrix,
 #' this parameter can be skipped and takes the default `NULL` value.
+#' @param mtau The maximum allowable lag time
 #'
 #' @return A list with the following elements:
 #' \item{tau}{a set of time lags}
@@ -31,7 +32,7 @@
 #' @export
 #' @rdname lar_nonparametric_estimation
 #'
-lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
+lar_nonparametric_estimation <- function(X, tp, mtau=1000, group_id = NULL) {
 
   tp <- tp-min(tp)+1
 
@@ -70,6 +71,7 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
   p <- 1
   for (i in 1:(length(tp)-1)) {
     for (j in (i+1):length(tp)){
+      if(tp[j] - tp[i]<=mtau){
       tauij[p] <- tp[j] - tp[i]
       num <- data[, i]*data[, j]*(data[, i] + 3*data[, j])*(data[, i] + 10*data[, j])
       Aij[p] <- 2*sum(choose(table(num[which(num!=0)]), 2))
@@ -90,7 +92,7 @@ lar_nonparametric_estimation <- function(X, tp, group_id = NULL) {
 
     }
   }
-
+}
   gtauij <- g_m[tauij]/g_n[tauij]
   gtauij <- gtauij[gtauij!=NaN]                       
   tau <- tauij[gtauij!=NaN] 
