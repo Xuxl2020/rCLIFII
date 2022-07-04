@@ -5,6 +5,7 @@
 #' @param n A vector or a positive integer, representing the number of individuals identified in each sampling period.
 #' It indicates the same number of individuals identified in all sampling periods if a positive integer.
 #' @param tp A set of observation time
+#' @param mtau The maximum allowable lag time
 #'
 #' @return A list with the following elements:
 #'
@@ -43,7 +44,7 @@
 #' res$R_tau; res$tau
 #'
 #'
-lir_nonparametric_estimation <- function(X, n, tp) {
+lir_nonparametric_estimation <- function(X, n, tp, mtau=1000) {
 
   tp <- tp-min(tp)+1
 
@@ -82,6 +83,7 @@ lir_nonparametric_estimation <- function(X, n, tp) {
   k <- 1
   for (i in 1:(length(tp)-1)){
     for (j in (i+1):length(tp)){
+      if(tp[j] - tp[i]<=mtau){
       mij[k] <- sum(data[,j]*data[,i]==1)
       nij[k] <- n[i]*n[j]
       tauij[k] <- tp[j] - tp[i]
@@ -90,7 +92,7 @@ lir_nonparametric_estimation <- function(X, n, tp) {
       k <- k + 1
     }
   }
-
+}
   R_tauij <- R_m[tauij]/R_n[tauij]
   tau <- tauij
   R_tau <- R_m[tau]/R_n[tau]
