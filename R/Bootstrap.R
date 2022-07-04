@@ -77,7 +77,7 @@ lir_bootstrap <- function(X, tp, seed = NULL) {
   len <- length(unique_observed_individual)
   bootstrap_sample <- sample(unique_observed_individual, len, replace = TRUE)
   # update sample
-  matrix_bootstrap_sample <- matrix_data[unique(match(bootstrap_sample, unique_observed_individual)),]
+  matrix_bootstrap_sample <- matrix_data[match(bootstrap_sample, unique_observed_individual),]
   return(matrix_bootstrap_sample)
 }
 

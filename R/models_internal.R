@@ -26,7 +26,7 @@ Model1 <- function(mij, nij, tauij, mtau=1000) {
     object <- sum(mij*log(Rtau)+(nij-mij)*log(1-Rtau))
     return(-object)
   }
-  opt <- stats::optim(0.001, LL, method ="Brent", lower = 0.005, upper = 0.09)
+  opt <- stats::optim(0.001, LL, method ="Brent", lower = 0.005, upper = 0.05)
   return(opt)
 }
 
@@ -82,7 +82,7 @@ Model4 <- function(Aij, Ai, tauij, mtau=1000){
     if (max(gtau)>=1) return(9000000000000);
     return(-sum(Aij*log(gtau) + (Ai-Aij)*log(1-gtau)))
   }
-  opt <- stats::optim(0.01, LL, method ="Brent", lower = 0.05, upper =0.9)
+  opt <- stats::optim(0.01, LL, method ="Brent", lower = 0.05, upper = 0.9)
   return(opt)
 }
 
@@ -150,7 +150,7 @@ lir.model.res <- function(model, mij, nij, tauij, mtau, model_cl_fun = NULL, cl.
     alpha <- est$par[1]
     beta <- est$par[2]
     gamma <- est$par[3]
-    Rtau <-  alpha*exp(-beta*tauij) +gamma
+    Rtau <- alpha*exp(-beta*tauij) + gamma
     Hc11 <- sum(exp(-beta*tauij)^2*( mij/Rtau^2+(nij-mij)/(1-Rtau)^2 ))
     Hc22 <- sum(alpha*exp(-beta*tauij)*tauij^2*(-mij/Rtau+(nij-mij)/(1-Rtau)) +
                   (alpha*exp(-beta*tauij)*tauij)^2*(mij/Rtau^2+(nij-mij)/(1-Rtau)^2) )

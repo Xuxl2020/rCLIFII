@@ -9,6 +9,7 @@
 #' this parameter can be skipped and takes the default `NULL` value.
 #' @param mtau The maximum allowable lag time
 #'
+#'
 #' @return A list with the following elements:
 #' \item{tau}{a set of time lags}
 #' \item{gtau}{A nonparametric estimator of \eqn{\hat{g}(\tau)} was given by Whitehead (2007)}
@@ -75,16 +76,16 @@ lar_nonparametric_estimation <- function(X, tp, mtau=1000, group_id = NULL) {
       tauij[p] <- tp[j] - tp[i]
       num <- data[, i]*data[, j]*(data[, i] + 3*data[, j])*(data[, i] + 10*data[, j])
       Aij[p] <- 2*sum(choose(table(num[which(num!=0)]), 2))
-      
+
       idx <- which(data[,i]!=0)
       if(length(idx)==0){
-      Ai[p] <- 0
+        Ai[p] <- 0
       }
       if(length(idx)!=0){
         data_list <- split(data[idx, j], data[idx,i])
         Ai[p] <- sum(sapply(data_list, function(x)(length(x)-1)*(length(x)-sum(x==0))))
       }
-                         
+
       g_m[tp[j]-tp[i]] <- g_m[tp[j]-tp[i]] + Aij[p]
       g_n[tp[j]-tp[i]] <- g_n[tp[j]-tp[i]] + Ai[p]
 
@@ -94,8 +95,7 @@ lar_nonparametric_estimation <- function(X, tp, mtau=1000, group_id = NULL) {
   }
 }
   gtauij <- g_m[tauij]/g_n[tauij]
-  gtauij <- gtauij[gtauij!=NaN]                       
-  tau <- tauij[gtauij!=NaN] 
+  tau <- tauij
   g_tau <- g_m[tau]/g_n[tau]
 
   g_data <- list(tau=tau, g_tau=g_tau, g_m=g_m, g_n=g_n,

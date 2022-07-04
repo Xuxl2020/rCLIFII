@@ -57,7 +57,7 @@ lar_model_selection <- function(X, model, method, tp,
 
   tT <- max(tp-min(tp))
   len <- length(tp)
-  lar_data <- lar_nonparametric_estimation(X, tp, group_id)
+  lar_data <- lar_nonparametric_estimation(X, tp, mtau, group_id)
   g_m <- lar_data$g_m
   g_n <- lar_data$g_n
   Aij <- lar_data$Aij
@@ -100,7 +100,7 @@ lar_model_selection <- function(X, model, method, tp,
     RESULTS <- matrix(0, length(jsamples), length(model.est))
     for(j in 1:length(jsamples)){
       tp0 = as.numeric(colnames(jsamples[[j]]))
-      lar_data <- lar_nonparametric_estimation(as.matrix(jsamples[[j]]), tp0)
+      lar_data <- lar_nonparametric_estimation(as.matrix(jsamples[[j]]), tp0, mtau)
       Aij <- lar_data$Aij
       Ai <- lar_data$Ai
       tauij <- lar_data$tauij
@@ -112,45 +112,42 @@ lar_model_selection <- function(X, model, method, tp,
     }
   }
   if (method == 'BBootstrap'){
-  if(ncores>1){
-    cl <- parallel::makeCluster(ncores) # not to overload your computer
-    doParallel::registerDoParallel(cl)
-    RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
-      tp_list <- bin_make(tp, bin_len)
-      sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
-      dat <- lar_nonparametric_estimation(sampboot, tp, group_id)
-      Aij <- dat$Aij
-      Ai <- dat$Ai
-      tauij <- dat$tauij
-      if (model == 'model_cl_fun'){
-        res <- model_cl_fun(Aij, Ai, tauij, mtau)
-      } else {
-        res <- lar.model.res(model, Aij, Ai, tauij, mtau)
+    if(ncores>1){
+      cl <- parallel::makeCluster(ncores) # not to overload your computer
+      doParallel::registerDoParallel(cl)
+      RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
+        tp_list <- bin_make(tp, bin_len)
+        sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
+        dat <- lar_nonparametric_estimation(sampboot, tp, mtau, group_id)
+        Aij <- dat$Aij
+        Ai <- dat$Ai
+        tauij <- dat$tauij
+        if (model == 'model_cl_fun'){
+          res <- model_cl_fun(Aij, Ai, tauij, mtau)
+        } else {
+          res <- lar.model.res(model, Aij, Ai, tauij, mtau)
+        }
+        out <- res$par
+        return(out)
+      })
+      parallel::stopCluster(cl)
+    }else{
+      RESULTS <- matrix(0, B, model.K)
+      for(i in seq_len(B)){
+        tp_list <- bin_make(tp, bin_len)
+        sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
+        dat <- lar_nonparametric_estimation(sampboot, tp, mtau, group_id)
+        Aij <- dat$Aij
+        Ai <- dat$Ai
+        tauij <- dat$tauij
+        if (model == 'model_cl_fun'){
+          RESULTS[i,] <- model_cl_fun(Aij, Ai, tauij, mtau)$par
+        } else {
+          RESULTS[i,] <- lar.model.res(model, Aij, Ai, tauij, mtau)$par
+        }
       }
-      out <- res$par
-      return(out)
-    })
-    parallel::stopCluster(cl)
-  }else{
-    RESULTS <- matrix(0, B, model.K)
-    for(i in seq_len(B)){
-      tp_list <- bin_make(tp, bin_len)
-      sampboot <- lar_bootstrap(X, tp_list, group_id, seed)
-      dat <- lar_nonparametric_estimation(sampboot, tp, group_id)
-      Aij <- dat$Aij
-      Ai <- dat$Ai
-      tauij <- dat$tauij
-      if (model == 'model_cl_fun'){
-        RESULTS[j,] <- model_cl_fun(Aij, Ai, tauij, mtau)$par
-      } else {
-        RESULTS[j,] <- lar.model.res(model, Aij, Ai, tauij, mtau)$par
-      }
-      out <- RESULTS$par
-      RESULTS[i,] <- out
     }
   }
-  }
-
   dimpara <- sum(diag(model.H%*%(stats::var(RESULTS))))
   AIC <- 2*model.val + 2*model.K
   estimation_c <- lar_estimation_c(g_m, g_n, Aij, Ai, tauij, mtau)

@@ -7,6 +7,7 @@
 #' @param tp A set of observation time
 #' @param mtau The maximum allowable lag time
 #'
+#'
 #' @return A list with the following elements:
 #'
 #' \item{tau}{a set of time lags}

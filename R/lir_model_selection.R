@@ -13,7 +13,7 @@
 #' @param method The method = 'Bootstrap', 'BBootstrap', or 'Jackknife'
 #' @param nboot The number of bootstrap samples desired
 #' @param bin_len An integer represents len-time-unit intervals
-#' @param mtau The maximum allowable lag time.
+#' @param mtau The maximum allowable lag time
 #' @param ncores doParallel.
 #' @param seed Random seed.
 #' @details
@@ -28,7 +28,9 @@
 #' @rdname lir_model_selection
 
 
-lir_model_selection <- function(X, n, tp, model, method,
+lir_model_selection <- function(X, n, tp,
+                                model,
+                                method,
                                 ncores = 4,
                                 mtau = 1000,
                                 nboot = -1,
@@ -38,7 +40,7 @@ lir_model_selection <- function(X, n, tp, model, method,
                                 model.K = NULL,
                                 seed = NULL){
 
-  tp <- tp-min(tp)+1
+  tp = tp - min(tp) + 1
 
   if (length(n)>1 && length(n)!=length(tp)) {
     stop("'n' or 'tp' is valid.")
@@ -60,10 +62,11 @@ lir_model_selection <- function(X, n, tp, model, method,
       stop("num_bin must be a positive integer bigger than 1")
     }
   }
+
   tT <- max(tp-min(tp))
   len <- length(tp)
 
-  lir_data <- lir_nonparametric_estimation(X, n, tp)
+  lir_data <- lir_nonparametric_estimation(X, n, tp, mtau)
 
   R_m <- lir_data$R_m
   R_n <- lir_data$R_n
@@ -108,7 +111,7 @@ lir_model_selection <- function(X, n, tp, model, method,
     RESULTS <- matrix(0, length(jsamples), length(model.est))
     for(j in 1:length(jsamples)){
       tp0 = as.numeric(colnames(jsamples[[j]]))
-      lir_data <- lir_nonparametric_estimation(as.matrix(jsamples[[j]]), n[tp %in% tp0], tp0)
+      lir_data <- lir_nonparametric_estimation(as.matrix(jsamples[[j]]), n[tp %in% tp0], tp0, mtau)
       mij <- lir_data$mij
       nij <- lir_data$nij
       tauij <- lir_data$tauij
@@ -120,51 +123,52 @@ lir_model_selection <- function(X, n, tp, model, method,
     }
   }
   if (method == 'Bootstrap'| method == 'BBootstrap'){
-  if(ncores>1){
-    cl <- parallel::makeCluster(ncores) # not to overload your computer
-    doParallel::registerDoParallel(cl)
-    RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
-      if (method == 'Bootstrap'){
-        sampboot <- lir_bootstrap(X, tp, seed)
+    if(ncores>1){
+      cl <- parallel::makeCluster(ncores) # not to overload your computer
+      doParallel::registerDoParallel(cl)
+      RESULTS = foreach::`%dopar%`(foreach::foreach(i = seq_len(B), .combine = rbind), {
+        if (method == 'Bootstrap'){
+          sampboot <- lir_bootstrap(X, tp, seed)
+        }
+        if (method == 'BBootstrap'){
+          tp_list <- bin_make(tp, bin_len)
+          sampboot <- lar_bootstrap(X, tp_list)
+        }
+        dat <- lir_nonparametric_estimation(sampboot, n, tp, mtau)
+        mij <- dat$mij
+        nij <- dat$nij
+        tauij <- dat$tauij
+        if (model == 'model_cl_fun'){
+          res <- model_cl_fun(mij, nij, tauij, mtau)
+        } else {
+          res <- lir.model.res(model, mij, nij, tauij, mtau)
+        }
+        out <- res$par
+        return(out)
+      })
+      parallel::stopCluster(cl)
+    }else{
+      RESULTS <- matrix(0, B, model.K)
+      for(i in seq_len(B)){
+        if (method == 'Bootstrap'){
+          sampboot <- lir_bootstrap(X, tp)
+        }
+        if (method == 'BBootstrap'){
+          tp_list <- bin_make(tp, bin_len)
+          sampboot <- lar_bootstrap(X, tp_list)
+        }
+        dat <- lir_nonparametric_estimation(sampboot, n, tp, mtau)
+        mij <- dat$mij
+        nij <- dat$nij
+        tauij <- dat$tauij
+        if (model == 'model_cl_fun'){
+          RESULTS[i,] <- model_cl_fun(mij, nij, tauij, mtau)$par
+        } else {
+          RESULTS[i,] <- lir.model.res(model, mij, nij, tauij, mtau)$par
+        }
       }
-      if (method == 'BBootstrap'){
-        tp_list <- bin_make(tp, bin_len)
-        sampboot <- lar_bootstrap(X, tp_list)
-      }
-      dat <- lir_nonparametric_estimation(sampboot, n, tp)
-      mij <- dat$mij
-      nij <- dat$nij
-      tauij <- dat$tauij
-      if (model == 'model_cl_fun'){
-        res <- model_cl_fun(mij, nij, tauij, mtau)
-      } else {
-        res <- lir.model.res(model, mij, nij, tauij, mtau)
-      }
-      out <- res$par
-      return(out)
-    })
-    parallel::stopCluster(cl)
-  }else{
-    RESULTS <- matrix(0, B, model.K)
-    for(s in seq_len(B)){
-      if (method == 'Bootstrap'){
-        sampboot <- lir_bootstrap(X, tp)
-      }
-      if (method == 'BBootstrap'){
-        tp_list <- bin_make(tp, bin_len)
-        sampboot <- lar_bootstrap(X, tp_list)
-      }
-      dat <- lir_nonparametric_estimation(sampboot, n, tp)
-      mij <- dat$mij
-      nij <- dat$nij
-      tauij <- dat$tauij
-      if (model == 'model_cl_fun'){
-        RESULTS[s,] <- model_cl_fun(mij, nij, tauij, mtau)$par
-      } else {
-        RESULTS[s,] <- lir.model.res(model, mij, nij, tauij, mtau)$par
-      }
+    }
   }
-}
   dimpara <- sum(diag(model.H%*%(stats::var(RESULTS))))
   AIC <- 2*model.val + 2*model.K
   estimation_c <- lir_estimation_c(R_m, R_n, mij, nij, tauij, mtau)
