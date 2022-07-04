@@ -171,7 +171,10 @@ lar_bootstrap <- function(X, block_list, group_id = NULL, seed = NULL) {
     }
   }
 
-  bootstrap_sample <- unlist(lapply(block_list, function(x)sort(sample(x, replace = TRUE))))
+  bootstrap_sample <- unlist(lapply(block_list, function(x){
+  if(length(x)==1) {x=x}else{
+    sort(sample(x, length(x), replace = TRUE))}} ))
+  
   idx <- match(bootstrap_sample, unlist(block_list))
   # update sample
   matrix_bootstrap_sample <- matrix_data[, idx]
