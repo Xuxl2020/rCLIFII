@@ -26,7 +26,7 @@ Model1 <- function(mij, nij, tauij, mtau=1000) {
     object <- sum(mij*log(Rtau)+(nij-mij)*log(1-Rtau))
     return(-object)
   }
-  opt <- stats::optim(0.001, LL, method ="Brent", lower = 0.005, upper = 0.05)
+  opt <- stats::optim(0.001, LL, method ="Brent", lower = 0, upper = 0.05)
   return(opt)
 }
 
@@ -82,7 +82,7 @@ Model4 <- function(Aij, Ai, tauij, mtau=1000){
     if (max(gtau)>=1) return(9000000000000);
     return(-sum(Aij*log(gtau) + (Ai-Aij)*log(1-gtau)))
   }
-  opt <- stats::optim(0.01, LL, method ="Brent", lower = 0.05, upper = 0.9)
+  opt <- stats::optim(0.01, LL, method ="Brent", lower = 0, upper = 0.9)
   return(opt)
 }
 
