@@ -128,7 +128,7 @@ Model6 <- function(Aij, Ai, tauij, mtau=1000) {
 lir.model.res <- function(model, mij, nij, tauij, mtau, model_cl_fun = NULL, cl.H = NULL, model.K = NULL){
   if(model=='Model1') {
     est <- Model1(mij, nij, tauij, mtau)
-    sder <- sum(-mij/est$par^2-(nij-mij)/((1-est$par)^2))
+    sder <- abs(sum(-mij/est$par^2-(nij-mij)/((1-est$par)^2)))
     H <- matrix(sder)
     K = 1
   }
